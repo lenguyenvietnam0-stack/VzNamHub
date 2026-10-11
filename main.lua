@@ -10,6 +10,10 @@ if CoreGui:FindFirstChild("VzNamHubGui") then
     CoreGui.VzNamHubGui:Destroy()
 end
 
+-- Biến lưu trữ nút script vừa bấm gần nhất
+local LastSelectedScriptBtn = nil
+local LastSelectedScriptStroke = nil
+
 -- Tạo ScreenGui chính
 local VzNamGui = Instance.new("ScreenGui")
 VzNamGui.Name = "VzNamHubGui"
@@ -48,7 +52,7 @@ MainFrame.Name = "MainFrame"
 MainFrame.Parent = VzNamGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.Position = UDim2.new(0.5, -170, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 360, 0, 310)
+MainFrame.Size = UDim2.new(0, 370, 0, 310)
 MainFrame.ClipsDescendants = true
 
 local FrameCorner = Instance.new("UICorner")
@@ -76,7 +80,7 @@ FrameStroke.Color = Color3.fromRGB(255, 255, 255)
 FrameStroke.Thickness = 2
 FrameStroke.Parent = MainFrame
 
--- Tiêu đề Menu (Đồng thời là tay cầm để kéo bảng menu)
+-- Tiêu đề Menu (Tay cầm kéo menu)
 local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Parent = MainFrame
@@ -142,84 +146,219 @@ TitleText.TextSize = 13
 TitleText.Font = Enum.Font.SourceSansBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 
--- 3. THANH TAB DỌC BÊN TRÁI (VIỀN NGOÀI BÊN TRÁI)
-local TabBar = Instance.new("Frame")
-TabBar.Name = "TabBar"
-TabBar.Parent = MainFrame
-TabBar.Position = UDim2.new(0, 8, 0, 48)
-TabBar.Size = UDim2.new(0, 100, 1, -56)
-TabBar.BackgroundTransparency = 1
+-- 3. THANH TAB DỌC BÊN TRÁI
+local TabBarLeft = Instance.new("Frame")
+TabBarLeft.Name = "TabBarLeft"
+TabBarLeft.Parent = MainFrame
+TabBarLeft.Position = UDim2.new(0, 8, 0, 48)
+TabBarLeft.Size = UDim2.new(0, 100, 1, -56)
+TabBarLeft.BackgroundTransparency = 1
 
-local TabListLayout = Instance.new("UIListLayout")
-TabListLayout.Parent = TabBar
-TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-TabListLayout.Padding = UDim.new(0, 8)
+local LeftLayout = Instance.new("UIListLayout")
+LeftLayout.Parent = TabBarLeft
+LeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
+LeftLayout.Padding = UDim.new(0, 8)
 
-local Tab1Btn = Instance.new("TextButton")
-Tab1Btn.Parent = TabBar
-Tab1Btn.Size = UDim2.new(1, 0, 0, 38)
-Tab1Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Tab1Btn.BackgroundTransparency = 0.3
-Tab1Btn.Text = "steal an egg"
-Tab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Tab1Btn.Font = Enum.Font.SourceSansBold
-Tab1Btn.TextSize = 12
-Tab1Btn.TextWrapped = true
+-- Nút Main Tab 1
+local MainTab1Btn = Instance.new("TextButton")
+MainTab1Btn.Parent = TabBarLeft
+MainTab1Btn.Size = UDim2.new(1, 0, 0, 38)
+MainTab1Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainTab1Btn.BackgroundTransparency = 0.3
+MainTab1Btn.Text = "steal an egg"
+MainTab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MainTab1Btn.Font = Enum.Font.SourceSansBold
+MainTab1Btn.TextSize = 12
+MainTab1Btn.TextWrapped = true
 
 local Tab1Corner = Instance.new("UICorner")
 Tab1Corner.CornerRadius = UDim.new(0, 8)
-Tab1Corner.Parent = Tab1Btn
+Tab1Corner.Parent = MainTab1Btn
 
-local Tab2Btn = Instance.new("TextButton")
-Tab2Btn.Parent = TabBar
-Tab2Btn.Size = UDim2.new(1, 0, 0, 38)
-Tab2Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Tab2Btn.BackgroundTransparency = 0.7
-Tab2Btn.Text = "bloxkid"
-Tab2Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-Tab2Btn.Font = Enum.Font.SourceSansBold
-Tab2Btn.TextSize = 13
+local Tab1Stroke = Instance.new("UIStroke")
+Tab1Stroke.Color = Color3.fromRGB(255, 50, 50) -- Đỏ khi active
+Tab1Stroke.Thickness = 2
+Tab1Stroke.Parent = MainTab1Btn
+
+-- Nút Main Tab 2
+local MainTab2Btn = Instance.new("TextButton")
+MainTab2Btn.Parent = TabBarLeft
+MainTab2Btn.Size = UDim2.new(1, 0, 0, 38)
+MainTab2Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainTab2Btn.BackgroundTransparency = 0.7
+MainTab2Btn.Text = "bloxkid"
+MainTab2Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MainTab2Btn.Font = Enum.Font.SourceSansBold
+MainTab2Btn.TextSize = 13
 
 local Tab2Corner = Instance.new("UICorner")
 Tab2Corner.CornerRadius = UDim.new(0, 8)
-Tab2Corner.Parent = Tab2Btn
+Tab2Corner.Parent = MainTab2Btn
 
--- 4. KHUNG CUỘN CHO TAB "steal an egg" (BÊN PHẢI)
-local Scroll1 = Instance.new("ScrollingFrame")
-Scroll1.Name = "Scroll1"
-Scroll1.Parent = MainFrame
-Scroll1.Position = UDim2.new(0, 114, 0, 48)
-Scroll1.Size = UDim2.new(1, -122, 1, -56)
-Scroll1.BackgroundTransparency = 1
-Scroll1.CanvasSize = UDim2.new(0, 0, 0, 2000)
-Scroll1.ScrollBarThickness = 4
-Scroll1.Visible = true
+local Tab2Stroke = Instance.new("UIStroke")
+Tab2Stroke.Color = Color3.fromRGB(255, 255, 255)
+Tab2Stroke.Thickness = 1
+Tab2Stroke.Parent = MainTab2Btn
 
-local ListLayout1 = Instance.new("UIListLayout")
-ListLayout1.Parent = Scroll1
-ListLayout1.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout1.Padding = UDim.new(0, 8)
+-- HÀM TẠO KHUNG CHỨA SUB-TABS (NO KEY / CÓ KEY)
+local function CreateCategoryContainer(visible)
+    local frame = Instance.new("Frame")
+    frame.Parent = MainFrame
+    frame.Position = UDim2.new(0, 114, 0, 48)
+    frame.Size = UDim2.new(1, -122, 1, -56)
+    frame.BackgroundTransparency = 1
+    frame.Visible = visible
+    
+    local subBar = Instance.new("Frame")
+    subBar.Parent = frame
+    subBar.Size = UDim2.new(1, 0, 0, 28)
+    subBar.BackgroundTransparency = 1
+    
+    local subLayout = Instance.new("UIListLayout")
+    subLayout.Parent = subBar
+    subLayout.FillDirection = Enum.FillDirection.Horizontal
+    subLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    subLayout.Padding = UDim.new(0, 6)
+    
+    -- Nút No Key
+    local noKeyBtn = Instance.new("TextButton")
+    noKeyBtn.Parent = subBar
+    noKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
+    noKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    noKeyBtn.BackgroundTransparency = 0.3
+    noKeyBtn.Text = "no key"
+    noKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    noKeyBtn.Font = Enum.Font.SourceSansBold
+    noKeyBtn.TextSize = 12
+    
+    local nkCorner = Instance.new("UICorner")
+    nkCorner.CornerRadius = UDim.new(0, 6)
+    nkCorner.Parent = noKeyBtn
 
--- 5. KHUNG CUỘN CHO TAB "bloxkid" (BÊN PHẢI)
-local Scroll2 = Instance.new("ScrollingFrame")
-Scroll2.Name = "Scroll2"
-Scroll2.Parent = MainFrame
-Scroll2.Position = UDim2.new(0, 114, 0, 48)
-Scroll2.Size = UDim2.new(1, -122, 1, -56)
-Scroll2.BackgroundTransparency = 1
-Scroll2.CanvasSize = UDim2.new(0, 0, 0, 2000)
-Scroll2.ScrollBarThickness = 4
-Scroll2.Visible = false
+    local nkStroke = Instance.new("UIStroke")
+    nkStroke.Color = Color3.fromRGB(255, 50, 50) -- Đỏ khi active
+    nkStroke.Thickness = 2
+    nkStroke.Parent = noKeyBtn
+    
+    -- Nút Có Key
+    local hasKeyBtn = Instance.new("TextButton")
+    hasKeyBtn.Parent = subBar
+    hasKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
+    hasKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    hasKeyBtn.BackgroundTransparency = 0.7
+    hasKeyBtn.Text = "có key"
+    hasKeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    hasKeyBtn.Font = Enum.Font.SourceSansBold
+    hasKeyBtn.TextSize = 12
+    
+    local hkCorner = Instance.new("UICorner")
+    hkCorner.CornerRadius = UDim.new(0, 6)
+    hkCorner.Parent = hasKeyBtn
 
-local ListLayout2 = Instance.new("UIListLayout")
-ListLayout2.Parent = Scroll2
-ListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout2.Padding = UDim.new(0, 8)
+    local hkStroke = Instance.new("UIStroke")
+    hkStroke.Color = Color3.fromRGB(255, 255, 255)
+    hkStroke.Thickness = 1
+    hkStroke.Parent = hasKeyBtn
+    
+    -- Khung cuộn No Key
+    local scrollNoKey = Instance.new("ScrollingFrame")
+    scrollNoKey.Parent = frame
+    scrollNoKey.Position = UDim2.new(0, 0, 0, 34)
+    scrollNoKey.Size = UDim2.new(1, 0, 1, -34)
+    scrollNoKey.BackgroundTransparency = 1
+    scrollNoKey.CanvasSize = UDim2.new(0, 0, 0, 2000)
+    scrollNoKey.ScrollBarThickness = 4
+    scrollNoKey.Visible = true
+    
+    local l1 = Instance.new("UIListLayout")
+    l1.Parent = scrollNoKey
+    l1.SortOrder = Enum.SortOrder.LayoutOrder
+    l1.Padding = UDim.new(0, 8)
+    
+    -- Khung cuộn Có Key
+    local scrollHasKey = Instance.new("ScrollingFrame")
+    scrollHasKey.Parent = frame
+    scrollHasKey.Position = UDim2.new(0, 0, 0, 34)
+    scrollHasKey.Size = UDim2.new(1, 0, 1, -34)
+    scrollHasKey.BackgroundTransparency = 1
+    scrollHasKey.CanvasSize = UDim2.new(0, 0, 0, 2000)
+    scrollHasKey.ScrollBarThickness = 4
+    scrollHasKey.Visible = false
+    
+    local l2 = Instance.new("UIListLayout")
+    l2.Parent = scrollHasKey
+    l2.SortOrder = Enum.SortOrder.LayoutOrder
+    l2.Padding = UDim.new(0, 8)
+    
+    -- Chuyển đổi Sub-tab
+    noKeyBtn.MouseButton1Click:Connect(function()
+        scrollNoKey.Visible = true
+        scrollHasKey.Visible = false
+        noKeyBtn.BackgroundTransparency = 0.3
+        noKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nkStroke.Color = Color3.fromRGB(255, 50, 50)
+        nkStroke.Thickness = 2
+        
+        hasKeyBtn.BackgroundTransparency = 0.7
+        hasKeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        hkStroke.Color = Color3.fromRGB(255, 255, 255)
+        hkStroke.Thickness = 1
+    end)
+    
+    hasKeyBtn.MouseButton1Click:Connect(function()
+        scrollNoKey.Visible = false
+        scrollHasKey.Visible = true
+        hasKeyBtn.BackgroundTransparency = 0.3
+        hasKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        hkStroke.Color = Color3.fromRGB(255, 50, 50)
+        hkStroke.Thickness = 2
+        
+        noKeyBtn.BackgroundTransparency = 0.7
+        noKeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        nkStroke.Color = Color3.fromRGB(255, 255, 255)
+        nkStroke.Thickness = 1
+    end)
+    
+    return frame, scrollNoKey, scrollHasKey
+end
 
--- Hàm tạo nút cho Tab "steal an egg"
-local function AddScriptButtonTab1(Name, Callback)
+-- Tạo 2 danh mục chính
+local StealContainer, StealNoKeyScroll, StealHasKeyScroll = CreateCategoryContainer(true)
+local BloxContainer, BloxNoKeyScroll, BloxHasKeyScroll = CreateCategoryContainer(false)
+
+-- Chuyển đổi Main Tab
+MainTab1Btn.MouseButton1Click:Connect(function()
+    StealContainer.Visible = true
+    BloxContainer.Visible = false
+    MainTab1Btn.BackgroundTransparency = 0.3
+    MainTab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Tab1Stroke.Color = Color3.fromRGB(255, 50, 50)
+    Tab1Stroke.Thickness = 2
+    
+    MainTab2Btn.BackgroundTransparency = 0.7
+    MainTab2Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Tab2Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Tab2Stroke.Thickness = 1
+end)
+
+MainTab2Btn.MouseButton1Click:Connect(function()
+    StealContainer.Visible = false
+    BloxContainer.Visible = true
+    MainTab2Btn.BackgroundTransparency = 0.3
+    MainTab2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Tab2Stroke.Color = Color3.fromRGB(255, 50, 50)
+    Tab2Stroke.Thickness = 2
+    
+    MainTab1Btn.BackgroundTransparency = 0.7
+    MainTab1Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Tab1Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Tab1Stroke.Thickness = 1
+end)
+
+-- HÀM TẠO NÚT SCRIPT (CÓ HIỆU ỨNG VIỀN ĐỎ KHI BẤM)
+local function AddScriptButton(scrollParent, Name, Callback)
     local Btn = Instance.new("TextButton")
-    Btn.Parent = Scroll1
+    Btn.Parent = scrollParent
     Btn.Size = UDim2.new(1, 0, 0, 38)
     Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Btn.BackgroundTransparency = 0.25
@@ -237,95 +376,102 @@ local function AddScriptButtonTab1(Name, Callback)
     BtnStroke.Thickness = 1
     BtnStroke.Parent = Btn
     
-    Btn.MouseButton1Click:Connect(Callback)
+    Btn.MouseButton1Click:Connect(function()
+        -- Reset nút cũ về viền trắng
+        if LastSelectedScriptStroke then
+            LastSelectedScriptStroke.Color = Color3.fromRGB(255, 255, 255)
+            LastSelectedScriptStroke.Thickness = 1
+        end
+        
+        -- Đổi nút vừa bấm sang viền đỏ đày nổi bật
+        BtnStroke.Color = Color3.fromRGB(255, 50, 50)
+        BtnStroke.Thickness = 2.5
+        
+        -- Cập nhật biến lưu trữ
+        LastSelectedScriptBtn = Btn
+        LastSelectedScriptStroke = BtnStroke
+        
+        -- Thực thi script
+        Callback()
+    end)
 end
 
--- Hàm tạo nút cho Tab "bloxkid"
-local function AddScriptButtonTab2(Name, Callback)
-    local Btn = Instance.new("TextButton")
-    Btn.Parent = Scroll2
-    Btn.Size = UDim2.new(1, 0, 0, 38)
-    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.BackgroundTransparency = 0.25
-    Btn.Text = Name
-    Btn.TextColor3 = Color3.fromRGB(40, 40, 40)
-    Btn.Font = Enum.Font.SourceSansSemibold
-    Btn.TextSize = 14
-    
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 8)
-    BtnCorner.Parent = Btn
-
-    local BtnStroke = Instance.new("UIStroke")
-    BtnStroke.Color = Color3.fromRGB(255, 255, 255)
-    BtnStroke.Thickness = 1
-    BtnStroke.Parent = Btn
-    
-    Btn.MouseButton1Click:Connect(Callback)
-end
-
--- Xử lý chuyển đổi giữa 2 Tab dọc bên trái
-Tab1Btn.MouseButton1Click:Connect(function()
-    Scroll1.Visible = true
-    Scroll2.Visible = false
-    Tab1Btn.BackgroundTransparency = 0.3
-    Tab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Tab2Btn.BackgroundTransparency = 0.7
-    Tab2Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-end)
-
-Tab2Btn.MouseButton1Click:Connect(function()
-    Scroll1.Visible = false
-    Scroll2.Visible = true
-    Tab2Btn.BackgroundTransparency = 0.3
-    Tab2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Tab1Btn.BackgroundTransparency = 0.7
-    Tab1Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-end)
-
--- ================= DANH SÁCH SCRIPT TAB "steal an egg" =================
-AddScriptButtonTab1("1. Infinite Yield (Admin)", function()
+-- ================= 1. STEAL AN EGG (NO KEY) =================
+AddScriptButton(StealNoKeyScroll, "1. Hop sv1 người(nokey)", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
 end)
-
-AddScriptButtonTab1("2. Fly Script (Bay)", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source"))()
-end)
-
-AddScriptButtonTab1("3. FyyCommunity", function()
+AddScriptButton(StealNoKeyScroll, "2. FyyCommunity(lúc có key lúc no key)", function()
     loadstring(game:HttpGet("https://FyyCommunity.my.id"))()
 end)
-
-AddScriptButtonTab1("4. Chilli Hub V3", function()
-    loadstring(game:HttpGet("https://apexhubeditor.vercel.app/api/raw?name=6bzPiAYUA0ekyyvhOhxpPobkK643_chilli-hub-vit-ho-v3"))()
+AddScriptButton(StealNoKeyScroll, "3. Chilli Hub V4(nokey)", function()
+    loadstring(game:HttpGet("https://id.tomroblox.com/raw/kairoblox/chilli-hub-viet-hoa-v4"))()
 end)
 
-AddScriptButtonTab1("5. Realkid hub", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+-- ================= 2. STEAL AN EGG (CÓ KEY) =================
+AddScriptButton(StealHasKeyScroll, "1. Lemon Hub v4(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/owenzeke99-tech/lennonhubv4/refs/heads/main/lennonhubkeyless.txt", true))()    
+end)
+AddScriptButton(StealHasKeyScroll, "2. Hoshi hub(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/napun87/stealanegg/refs/heads/main/hosi.lua"))()   
+end)
+AddScriptButton(StealHasKeyScroll, "3. Bigfroot(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"))()    
+end)
+AddScriptButton(StealHasKeyScroll, "4. Chữ A(ajjans)|(có key)", function()
+
+loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"))()
+end)
+AddScriptButton(StealHasKeyScroll, "5. Speed hub(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+end)
+AddScriptButton(StealHasKeyScroll, "6. Real kid(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+end)
+AddScriptButton(StealHasKeyScroll, "7. Chilli v2(có key)", function()
+
+loadstring(game:HttpGet("https://gist.githubusercontent.com/ronnei/1fa67c56dd9af203b192d15e752928e5/raw/4e2d5105640e09a008b4ae6df23f9708cadfef06/chilliv2-stealanegg"))()
 end)
 
-AddScriptButtonTab1("6. Speed hub", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+-- ================= 3. BLOXKID (NO KEY) =================
+AddScriptButton(BloxNoKeyScroll, "1. RedzHub v2 (kh bt có key không)", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/UCT-hub/main/refs/heads/main/redz-v2"))()
+end)
+AddScriptButton(BloxNoKeyScroll, "2. BananaHub(khbt có key không)", function()
+    repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+    getgenv().Team = "Marines"
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/obiyeueim/vthangsitink/main/BananaHub.lua"))()
+end)
+AddScriptButton(BloxNoKeyScroll, "3. Quantumx Hub(nokey)", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/flazhy/QuantumOnyx/refs/heads/main/QuantumOnyx.lua"))()
 end)
 
-AddScriptButtonTab1("7. Chữ A(ajjans)", function()
-    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"))()
+-- ================= 4. BLOXKID (CÓ KEY) =================
+AddScriptButton(BloxHasKeyScroll, "1. Speed Hub(có key)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
 end)
+AddScriptButton(BloxHasKeyScroll, "2. Omg Hub(có key)", function()
 
-AddScriptButtonTab1("8. Bigfroot", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"))()    
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Omgshit/Scripts/main/MainLoader.lua"))()
 end)
+AddScriptButton(BloxHasKeyScroll, "3. TeddyHub(có key)", function()
 
--- ================= DANH SÁCH SCRIPT TAB "bloxkid" =================
-AddScriptButtonTab2("1. Realkid", function()
-
- loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+repeat task.wait() until game:IsLoaded() and game:GetService("Players") and game.Players.LocalPlayer and game.Players.LocalPlayer:FindFirstChild("PlayerGui")
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/teddyhubdev/diepvy/refs/heads/main/TeddyHub.lua"))()
 end)
+AddScriptButton(BloxHasKeyScroll, "4. Gravity Hub(có key)", function()
 
-AddScriptButtonTab2("2. Chưa capnhat", function()
-    -- Dán link script của bloxkid vào đây
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-GravityHub/BloxFruit/refs/heads/main/Main.lua"))()
 end)
+AddScriptButton(BloxHasKeyScroll, "5.  Realkid hub(có key)", function()
 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+end)
 -- BẤM NÚT TRÒN BẬT/TẮT MENU
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
