@@ -136,7 +136,7 @@ TitleText.Parent = TitleBar
 TitleText.Position = UDim2.new(0, 45, 0, 0)
 TitleText.Size = UDim2.new(1, -50, 1, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "TỔNG HỢP SCRIPT | 👑VzNam Hub👑|"
+TitleText.Text = "TỔNG HỢP SAE | 👑VzNam Hub👑|"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.TextSize = 13
 TitleText.Font = Enum.Font.SourceSansBold
@@ -317,12 +317,12 @@ AddScriptButtonTab1("8. Bigfroot", function()
 end)
 
 -- ================= DANH SÁCH SCRIPT TAB "bloxkid" =================
-AddScriptButtonTab2("1. Realkid hub", function()
+AddScriptButtonTab2("1. Realkid", function()
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+ loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
 end)
 
-AddScriptButtonTab2("2. Chưa update", function()
+AddScriptButtonTab2("2. Chưa capnhat", function()
     -- Dán link script của bloxkid vào đây
 end)
 
