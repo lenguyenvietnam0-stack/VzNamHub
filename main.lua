@@ -140,7 +140,7 @@ TitleText.Parent = TitleBar
 TitleText.Position = UDim2.new(0, 45, 0, 0)
 TitleText.Size = UDim2.new(1, -50, 1, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "TỔNG HỢP SAE | 👑VzNam Hub👑|"
+TitleText.Text = "TỔNG HỢP SAE | 👑VzNam Hub v2👑|"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.TextSize = 13
 TitleText.Font = Enum.Font.SourceSansBold
@@ -406,6 +406,10 @@ end)
 AddScriptButton(StealNoKeyScroll, "3. Chilli Hub V4(nokey)", function()
     loadstring(game:HttpGet("https://id.tomroblox.com/raw/kairoblox/chilli-hub-viet-hoa-v4"))()
 end)
+AddScriptButton(StealNoKeyScroll, "4. Night hub(nokey)", function()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/WhiteX1208/Scripts/refs/heads/main/StealAnEggs.luau"))()
+end)
 
 -- ================= 2. STEAL AN EGG (CÓ KEY) =================
 AddScriptButton(StealHasKeyScroll, "1. Lemon Hub v4(có key)", function()
@@ -438,15 +442,10 @@ loadstring(game:HttpGet("https://gist.githubusercontent.com/ronnei/1fa67c56dd9af
 end)
 
 -- ================= 3. BLOXKID (NO KEY) =================
-AddScriptButton(BloxNoKeyScroll, "1. RedzHub v2 (kh bt có key không)", function()
+AddScriptButton(BloxNoKeyScroll, "1. RedzHub v2 (no key)", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/UCT-hub/main/refs/heads/main/redz-v2"))()
 end)
-AddScriptButton(BloxNoKeyScroll, "2. BananaHub(khbt có key không)", function()
-    repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
-    getgenv().Team = "Marines"
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/obiyeueim/vthangsitink/main/BananaHub.lua"))()
-end)
-AddScriptButton(BloxNoKeyScroll, "3. Quantumx Hub(nokey)", function()
+AddScriptButton(BloxNoKeyScroll, "2. Quantumx Hub(nokey)", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/flazhy/QuantumOnyx/refs/heads/main/QuantumOnyx.lua"))()
 end)
 
@@ -471,6 +470,12 @@ end)
 AddScriptButton(BloxHasKeyScroll, "5.  Realkid hub(có key)", function()
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"))()
+end)
+AddScriptButton(BloxHasKeyScroll, "6.  BananaHub(có key)", function()
+
+repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+    getgenv().Team = "Marines"
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/obiyeueim/vthangsitink/main/BananaHub.lua"))()
 end)
 -- BẤM NÚT TRÒN BẬT/TẮT MENU
 ToggleBtn.MouseButton1Click:Connect(function()
