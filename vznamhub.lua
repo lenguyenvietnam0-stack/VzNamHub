@@ -1,4 +1,4 @@
--- Gui to Lua (Hirose - CHILLI x VENYX Loader)
+-- Gui to Lua (VzNamHub - CHILLI x VENYX Loader)
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
