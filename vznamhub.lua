@@ -4,7 +4,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 -- Xóa GUI cũ nếu đã tồn tại
-if CoreGui:FindFirstChild("HiroseHubLoader") then
+if CoreGui:FindFirstChild("VzNamHubLoader") then
 	CoreGui.HiroseHubLoader:Destroy()
 end
 
