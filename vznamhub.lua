@@ -21,7 +21,7 @@ local FpsBoostEnabled = true
 
 -- Tạo ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "HiroseHubLoader"
+ScreenGui.Name = "VzNamHubLoader"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
