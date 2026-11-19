@@ -1,4 +1,4 @@
-[[ ═══════════════════════════════════════════════════════ VzNamHub : Toạ Độ - Steal an Egg Edition (Full Info + Bypass) ═══════════════════════════════════════════════════════ ]]
+--[[ ═══════════════════════════════════════════════════════ VzNamHub : Toạ Độ - Steal an Egg Edition (Full Info + Bypass FIXED) ═══════════════════════════════════════════════════════ ]]
 
 local CoreGui       = game:GetService("CoreGui")
 local Players       = game:GetService("Players")
@@ -65,19 +65,58 @@ local function RegTheme(el, t)
     table.insert(ThemedElements, {Element = el, Type = t})
     if el and State.ThemeBase then
         local base = State.ThemeBase
-        if t == "Primary" then
-            el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.08)
-        elseif t == "Secondary" then
-            el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.15)
-        elseif t == "DropFrame" then
-            el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.2)
-        elseif t == "DropItem" then
-            el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.3)
-        elseif t == "Input" then
-            el.BackgroundColor3 = base:Lerp(Color3.new(0,0,0), 0.4)
-        end
+        if t == "Primary" then el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.08)
+        elseif t == "Secondary" then el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.15)
+        elseif t == "DropFrame" then el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.2)
+        elseif t == "DropItem" then el.BackgroundColor3 = base:Lerp(Color3.new(1,1,1), 0.3)
+        elseif t == "Input" then el.BackgroundColor3 = base:Lerp(Color3.new(0,0,0), 0.4) end
     end
     return el
+end
+
+-- ═════════════════ BYPASS HELPERS (KHAI BÁO SỚM - TRÁNH LỖI) ═════════════════
+local function ApplyBypassNow()
+    local char = localPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    if BypassState.SpeedBypass or BypassState.WalkSpeed ~= 16 then
+        local target = BypassState.WalkSpeed
+        if BypassState.AntiSlow and target < 16 then target = 16 end
+        pcall(function() hum.WalkSpeed = target end)
+    end
+
+    if BypassState.JumpPower ~= 50 then
+        pcall(function() hum.UseJumpPower = true; hum.JumpPower = BypassState.JumpPower end)
+    end
+end
+
+local function HookHumanoid(hum)
+    if not hum or hum:GetAttribute("VzNamBypassHooked") then return end
+    hum:SetAttribute("VzNamBypassHooked", true)
+
+    Track(hum:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+        if not (BypassState.SpeedBypass or BypassState.WalkSpeed ~= 16) then return end
+        local target = BypassState.WalkSpeed
+        if BypassState.AntiSlow and target < 16 then target = 16 end
+        if math.abs(hum.WalkSpeed - target) > 0.1 then
+            pcall(function() hum.WalkSpeed = target end)
+        end
+    end))
+
+    Track(hum:GetPropertyChangedSignal("JumpPower"):Connect(function()
+        if BypassState.JumpPower == 50 then return end
+        if math.abs((hum.JumpPower or 0) - BypassState.JumpPower) > 0.1 then
+            pcall(function() hum.UseJumpPower = true; hum.JumpPower = BypassState.JumpPower end)
+        end
+    end))
+
+    Track(hum.HealthChanged:Connect(function(newHp)
+        if (BypassState.Godmode or BypassState.DamageBlock) and newHp < hum.MaxHealth then
+            pcall(function() hum.Health = hum.MaxHealth end)
+        end
+    end))
 end
 
 -- ═════════════════ ROOT UI ═════════════════
@@ -143,10 +182,8 @@ local function CreateLoadCard(parent, order, bgColor, titleText, mainText, borde
     card.BorderSizePixel = 0
     Corner(card); Stroke(card, borderColor, 1)
     local ic = Instance.new("Frame", card)
-    ic.Size = UDim2.new(0, 16, 0, 16)
-    ic.Position = UDim2.new(0, 4, 0.5, -8)
-    ic.BackgroundColor3 = borderColor
-    ic.BorderSizePixel = 0
+    ic.Size = UDim2.new(0, 16, 0, 16); ic.Position = UDim2.new(0, 4, 0.5, -8)
+    ic.BackgroundColor3 = borderColor; ic.BorderSizePixel = 0
     Corner(ic, UDim.new(1, 0)); Stroke(ic, borderColor)
     local il = Instance.new("TextLabel", ic)
     il.Size = UDim2.new(1,0,1,0); il.BackgroundTransparency = 1
@@ -1213,7 +1250,6 @@ Track(tabBypassBtn.MouseButton1Click:Connect(function()
 end))
 table.insert(Tabs, {Container = bypassScroll, Indicator = bypassIndicator})
 
--- Header info
 local bypassInfoCard = Instance.new("Frame", bypassScroll)
 bypassInfoCard.LayoutOrder = 0
 bypassInfoCard.Size = UDim2.new(1, 0, 0, 34)
@@ -1231,20 +1267,26 @@ biSub.TextColor3, biSub.TextSize = Color3.fromRGB(180,180,190), 7
 biSub.Font, biSub.TextXAlignment = Enum.Font.Gotham, Enum.TextXAlignment.Left
 biSub.TextTruncate = Enum.TextTruncate.AtEnd
 
--- Speed slider
+-- WalkSpeed slider (apply NGAY)
 local bypassSpeedFrame, bypassSpeedFill, bypassSpeedLbl = CreateSlider(bypassScroll, 1, "🏃 WalkSpeed (mặc định 16)", 16, 500,
     function() return BypassState.WalkSpeed end,
-    function(v) BypassState.WalkSpeed = v; BypassState.SpeedBypass = (v ~= 16) end)
+    function(v)
+        BypassState.WalkSpeed = v
+        BypassState.SpeedBypass = (v ~= 16)
+        ApplyBypassNow()
+    end)
 
--- Jump slider
+-- Jump slider (apply NGAY)
 local bypassJumpFrame, bypassJumpFill, bypassJumpLbl = CreateSlider(bypassScroll, 2, "🦘 JumpPower (mặc định 50)", 50, 1000,
     function() return BypassState.JumpPower end,
-    function(v) BypassState.JumpPower = v end)
+    function(v)
+        BypassState.JumpPower = v
+        ApplyBypassNow()
+    end)
 
--- Toggles
 CreateToggle(bypassScroll, 3, "🚀 Speed Bypass (duy trì WalkSpeed)",
     function() return BypassState.SpeedBypass end,
-    function(v) BypassState.SpeedBypass = v; if not v then BypassState.WalkSpeed = 16 end end)
+    function(v) BypassState.SpeedBypass = v; if not v then BypassState.WalkSpeed = 16; ApplyBypassNow() end end)
 
 CreateToggle(bypassScroll, 4, "👻 Noclip (xuyên vật thể)",
     function() return BypassState.Noclip end,
@@ -1299,47 +1341,60 @@ Track(resetBypassBtn.MouseButton1Click:Connect(function()
 end))
 
 -- ═════════════════ BYPASS HOOKS ═════════════════
--- Heartbeat loop: duy trì WalkSpeed / JumpPower / Godmode / Anti-Ragdoll
-Track(RunService.Heartbeat:Connect(function()
+Track(RunService.RenderStepped:Connect(function()
     local char = localPlayer.Character
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
     if not hum then return end
-
-    -- WalkSpeed
     if BypassState.SpeedBypass or BypassState.WalkSpeed ~= 16 then
         local target = BypassState.WalkSpeed
         if BypassState.AntiSlow and target < 16 then target = 16 end
-        if math.abs(hum.WalkSpeed - target) > 0.1 then
+        if math.abs(hum.WalkSpeed - target) > 0.05 then
             pcall(function() hum.WalkSpeed = target end)
         end
     end
-
-    -- JumpPower
     if BypassState.JumpPower ~= 50 then
-        if math.abs((hum.JumpPower or 0) - BypassState.JumpPower) > 0.1 then
-            pcall(function()
-                hum.UseJumpPower = true
-                hum.JumpPower = BypassState.JumpPower
-            end)
+        if math.abs((hum.JumpPower or 0) - BypassState.JumpPower) > 0.05 then
+            pcall(function() hum.UseJumpPower = true; hum.JumpPower = BypassState.JumpPower end)
         end
     end
-
-    -- Godmode
-    if BypassState.Godmode then
-        if hum.Health < hum.MaxHealth then
-            pcall(function() hum.Health = hum.MaxHealth end)
-        end
+    if BypassState.Godmode and hum.Health < hum.MaxHealth then
+        pcall(function() hum.Health = hum.MaxHealth end)
     end
-
-    -- Anti-Ragdoll
     if BypassState.AntiRagdoll then
         pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false) end)
     end
 end))
 
--- Stepped: Noclip
-Track(RunService.Stepped:Connect(function()
+Track(RunService.Heartbeat:Connect(function()
+    local char = localPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    if BypassState.SpeedBypass or BypassState.WalkSpeed ~= 16 then
+        if math.abs(hum.WalkSpeed - BypassState.WalkSpeed) > 0.1 then
+            pcall(function() hum.WalkSpeed = BypassState.WalkSpeed end)
+        end
+    end
+end))
+
+local charNow = localPlayer.Character
+if charNow then
+    local humNow = charNow:FindFirstChildOfClass("Humanoid")
+    if humNow then HookHumanoid(humNow) end
+end
+
+Track(localPlayer.CharacterAdded:Connect(function(char)
+    task.wait(0.5)
+    local hum = char:WaitForChild("Humanoid", 5)
+    if hum then
+        HookHumanoid(hum)
+        task.wait(0.2)
+        ApplyBypassNow()
+    end
+end))
+
+local function DoNoclip()
     if not BypassState.Noclip then return end
     local char = localPlayer.Character
     if not char then return end
@@ -1348,9 +1403,10 @@ Track(RunService.Stepped:Connect(function()
             part.CanCollide = false
         end
     end
-end))
+end
+Track(RunService.Stepped:Connect(DoNoclip))
+Track(RunService.Heartbeat:Connect(DoNoclip))
 
--- Infinite Jump
 Track(UserInputService.JumpRequest:Connect(function()
     if not BypassState.InfiniteJump then return end
     local char = localPlayer.Character
@@ -1360,18 +1416,20 @@ Track(UserInputService.JumpRequest:Connect(function()
     end
 end))
 
--- Damage Block: hook HealthChanged
-Track(localPlayer.CharacterAdded:Connect(function(char)
-    local hum = char:WaitForChild("Humanoid", 5)
-    if not hum then return end
-    Track(hum.HealthChanged:Connect(function(newHp)
-        if (BypassState.Godmode or BypassState.DamageBlock) and newHp < hum.MaxHealth then
-            pcall(function() hum.Health = hum.MaxHealth end)
-        end
-    end))
-end))
+local function ForceNetworkOwner()
+    pcall(function()
+        local char = localPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp:SetNetworkOwner(localPlayer) end
+    end)
+end
+Track(localPlayer.CharacterAdded:Connect(function() task.wait(1); ForceNetworkOwner() end))
+task.spawn(function() task.wait(2); ForceNetworkOwner() end)
 
--- ═════════════════ ANTI-CHEAT (CŨ) ═════════════════
+print("[VzNamHub Bypass] ✅ Hooks đã gắn - WalkSpeed/JumpPower sẽ apply ngay khi kéo slider")
+
+-- ═════════════════ ANTI-CHEAT ═════════════════
 local _antiKickHooked = false
 local function SetupAntiKick()
     if _antiKickHooked then return true end
@@ -1652,7 +1710,7 @@ CreateACToggle(3, "🌌 Anti-Void", "AntiVoid")
 CreateACToggle(4, "🌀 Anti-Fling", "AntiFling")
 CreateACToggle(5, "🔗 Network Owner Fix", "NetworkOwner")
 
--- ═════════════════ CONFIG SERIALIZE ═════════════════
+-- ═════════════════ SERIALIZE / CONFIG ═════════════════
 local function SerializeState()
     local PointsData = {}
     for _, p in ipairs(CoordPoints) do
@@ -1830,6 +1888,7 @@ local function ApplyConfig(data)
         BypassState.AntiSlow = B.AntiSlow == true
         BypassState.SpeedBypass = B.SpeedBypass == true
         BypassState.DamageBlock = B.DamageBlock == true
+        ApplyBypassNow()
     end
 end
 
@@ -1927,4 +1986,4 @@ end))
 ApplyTheme(Color3.fromRGB(15, 16, 22))
 UpdateAllStrokes(Color3.fromRGB(0, 191, 255))
 RefreshStartupLabel()
-print("[VzNamHub : Toạ Độ + Bypass] ✅ Loaded - Full Info + Bypass Edition")
+print("[VzNamHub : Toạ Độ + Bypass] ✅ Loaded - Full Info + Bypass FIXED Edition")
