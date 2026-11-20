@@ -631,6 +631,177 @@ do
 
     CreateCoordPoint("Điểm 1", 3384.41, 70.27, -350.64)
     CreateCoordPoint("Điểm 2", 523.90, 70.27, -359.41)
+    -- =======================================================
+-- TÍNH NĂNG ESP SÁCH (TÍCH HỢP VÀO HUB)
+-- =======================================================
+local espBookToggleBtn = Instance.new("TextButton", coordScroll)
+espBookToggleBtn.LayoutOrder, espBookToggleBtn.Size, espBookToggleBtn.BackgroundColor3 = 3, UDim2.new(1, 0, 0, 34), Color3.fromRGB(55,12,40)
+espBookToggleBtn.BackgroundTransparency, espBookToggleBtn.Text = 0, " → ESP SÁCH"
+espBookToggleBtn.TextColor3, espBookToggleBtn.TextSize, espBookToggleBtn.Font = Color3.fromRGB(255,255,255), 10, Enum.Font.GothamBold
+espBookToggleBtn.TextXAlignment = Enum.TextXAlignment.Center
+Corner(espBookToggleBtn); Stroke(espBookToggleBtn); RegTheme(espBookToggleBtn, "Secondary")
+
+local espBookContent = Instance.new("Frame", coordScroll)
+espBookContent.LayoutOrder, espBookContent.Size, espBookContent.AutomaticSize, espBookContent.BackgroundTransparency, espBookContent.Visible = 4, UDim2.new(1, 0, 0, 0), Enum.AutomaticSize.Y, 1, false
+local espBookLayout = Instance.new("UIListLayout", espBookContent)
+espBookLayout.SortOrder, espBookLayout.Padding, espBookLayout.HorizontalAlignment = Enum.SortOrder.LayoutOrder, UDim.new(0, 5), Enum.HorizontalAlignment.Center
+
+Track(espBookToggleBtn.MouseButton1Click:Connect(function()
+    espBookContent.Visible = not espBookContent.Visible
+    espBookToggleBtn.Text = espBookContent.Visible and " ↓ ESP SÁCH" or " → ESP SÁCH"
+end))
+
+-- Biến logic ESP Sách
+local isBookESPEnabled = false
+local bookFilterNumber = nil
+local activeBookESP = {}
+
+local function removeBookESP(object)
+    if activeBookESP[object] then
+        pcall(function() activeBookESP[object].box:Destroy() end)
+        pcall(function() activeBookESP[object].billboard:Destroy() end)
+        activeBookESP[object] = nil
+    end
+end
+
+-- Hàm tạo ESP
+local function scanForBooks()
+    local count = 0
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            local textToSearch = (obj.ActionText or "") .. " " .. (obj.ObjectText or "")
+            local bookNumStr = string.match(textToSearch, "[Bb]ook%s*#?%s*(%d+)")
+            
+            if bookNumStr and not string.find(textToSearch, "Deliver") and not string.find(textToSearch, "Giao") then
+                local bookNum = tonumber(bookNumStr)
+                local bookPart = obj.Parent
+                
+                -- Tìm BasePart (đề phòng sách nằm trong Model)
+                while bookPart and not bookPart:IsA("BasePart") and bookPart ~= workspace do bookPart = bookPart.Parent end
+                
+                if bookPart and bookPart:IsA("BasePart") then
+                    local shouldESP = false
+                    if bookFilterNumber then
+                        if bookNum == bookFilterNumber then shouldESP = true end
+                    else
+                        shouldESP = true
+                    end
+
+                    if shouldESP then
+                        count = count + 1
+                        if not activeBookESP[bookPart] then
+                            local box = Instance.new("BoxHandleAdornment")
+                            box.Name = "BookESP_Box"
+                            box.Adornee = bookPart
+                            box.AlwaysOnTop = true
+                            box.ZIndex = 10
+                            box.Size = bookPart.Size + Vector3.new(0.5, 0.5, 0.5)
+                            box.Transparency = 0.3
+                            box.Color3 = Color3.fromRGB(0, 255, 0)
+                            box.Parent = bookPart
+                            
+                            local billboard = Instance.new("BillboardGui")
+                            billboard.Name = "BookESP_Billboard"
+                            billboard.Adornee = bookPart
+                            billboard.Size = UDim2.new(0, 100, 0, 50)
+                            billboard.StudsOffset = Vector3.new(0, 1.5, 0)
+                            billboard.AlwaysOnTop = true
+                            
+                            local text = Instance.new("TextLabel")
+                            text.Parent = billboard
+                            text.Size = UDim2.new(1, 0, 1, 0)
+                            text.BackgroundTransparency = 1
+                            text.Text = "SÁCH #"..bookNum
+                            text.TextColor3 = Color3.fromRGB(0, 255, 0)
+                            text.TextStrokeTransparency = 0
+                            text.TextScaled = true
+                            text.Font = Enum.Font.GothamBold
+                            
+                            billboard.Parent = bookPart
+                            activeBookESP[bookPart] = {box = box, billboard = billboard}
+                        end
+                    else
+                        if activeBookESP[bookPart] then removeBookESP(bookPart) end
+                    end
+                end
+            end
+        end
+    end
+    
+    for obj, _ in pairs(activeBookESP) do
+        if not obj.Parent or not obj:IsDescendantOf(workspace) then removeBookESP(obj) end
+    end
+    return count
+end
+
+-- Vòng lặp chạy ngầm quét sách
+task.spawn(function()
+    while task.wait(1) do
+        if isBookESPEnabled then
+            local total = scanForBooks()
+            if espBookStatusLbl then
+                espBookStatusLbl.Text = "Tìm thấy: " .. total .. " cuốn sách."
+            end
+        end
+    end
+end)
+
+-- Nút Bật/Tắt ESP
+local espToggleSwitch, espToggleBtnObj, espToggleDot = CreateToggle(espBookContent, 1, "Bật/Tắt ESP Sách",
+    function() return isBookESPEnabled end,
+    function(v) 
+        isBookESPEnabled = v
+        if not v then
+            for obj, _ in pairs(activeBookESP) do removeBookESP(obj) end
+            if espBookStatusLbl then espBookStatusLbl.Text = "Đã tắt ESP." end
+        else
+            scanForBooks()
+        end
+    end)
+espToggleSwitch.BackgroundColor3 = Color3.fromRGB(70,15,50)
+RegTheme(espToggleSwitch, "Primary")
+
+-- Khung nhập số lọc
+local espFilterFrame = Instance.new("Frame", espBookContent)
+espFilterFrame.LayoutOrder, espFilterFrame.Size, espFilterFrame.BackgroundColor3 = 2, UDim2.new(1, 0, 0, 26), Color3.fromRGB(70,15,50)
+espFilterFrame.BackgroundTransparency = 0
+Corner(espFilterFrame); Stroke(espFilterFrame); RegTheme(espFilterFrame, "Primary")
+
+local espFilterBox = Instance.new("TextBox", espFilterFrame)
+espFilterBox.Size, espFilterBox.Position, espFilterBox.BackgroundColor3 = UDim2.new(1, -70, 0, 20), UDim2.new(0, 5, 0.5, -10), Color3.fromRGB(12,12,17)
+espFilterBox.BackgroundTransparency, espFilterBox.Text, espFilterBox.TextColor3, espFilterBox.PlaceholderText = 0, "", Color3.fromRGB(255,255,255), "Nhập số sách (VD: 104)"
+espFilterBox.PlaceholderColor3, espFilterBox.TextSize, espFilterBox.Font = Color3.fromRGB(150,155,165), 8, Enum.Font.Code
+espFilterBox.ClearTextOnFocus = false
+Corner(espFilterBox, UDim.new(0, 4)); Stroke(espFilterBox); RegTheme(espFilterBox, "Input")
+
+local espFilterBtn = Instance.new("TextButton", espFilterFrame)
+espFilterBtn.Size, espFilterBtn.Position, espFilterBtn.BackgroundColor3 = UDim2.new(0, 55, 0, 20), UDim2.new(1, -60, 0.5, -10), Color3.fromRGB(50, 150, 50)
+espFilterBtn.BackgroundTransparency, espFilterBtn.Text, espFilterBtn.TextColor3, espFilterBtn.TextSize, espFilterBtn.Font = 0, "LỌC", Color3.fromRGB(255,255,255), 8, Enum.Font.GothamBold
+Corner(espFilterBtn, UDim.new(0, 4)); Stroke(espFilterBtn)
+
+Track(espFilterBtn.MouseButton1Click:Connect(function()
+    local inputText = string.match(espFilterBox.Text, "%d+")
+    if inputText then
+        bookFilterNumber = tonumber(inputText)
+        espFilterBtn.Text = "Đã Lọc"
+        espFilterBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+    else
+        bookFilterNumber = nil
+        espFilterBtn.Text = "LỌC"
+        espFilterBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+    end
+    if isBookESPEnabled then 
+        for obj, _ in pairs(activeBookESP) do removeBookESP(obj) end -- Xóa cũ
+        scanForBooks() -- Quét lại
+    end
+end))
+
+-- Label trạng thái
+local espBookStatusLbl = Instance.new("TextLabel", espBookContent)
+espBookStatusLbl.LayoutOrder, espBookStatusLbl.Size, espBookStatusLbl.BackgroundTransparency = 3, UDim2.new(1, 0, 0, 20), 1
+espBookStatusLbl.Text, espBookStatusLbl.TextColor3, espBookStatusLbl.TextSize = "Chưa bật ESP.", Color3.fromRGB(200,200,200), 8
+espBookStatusLbl.Font = Enum.Font.Gotham
+-- =======================================================
 
     local addPointFrame = Instance.new("Frame", content)
     addPointFrame.LayoutOrder, addPointFrame.Size, addPointFrame.AutomaticSize, addPointFrame.BackgroundColor3 = 3, UDim2.new(1, 0, 0, 0), Enum.AutomaticSize.Y, Color3.fromRGB(70,15,50)
